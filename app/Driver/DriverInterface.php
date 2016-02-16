@@ -6,5 +6,5 @@ use Mantainance\Driver\DriverInterface;
 
 interface DriverInterface {
 
-	public function applySettings($pathToConfig, $pathToMantainancePage);
+	public function applySettings($pathToConfig, $pathToMantainancePage, $name);
 }

@@ -4,7 +4,7 @@ namespace Mantainance\Driver\Nginx;
 use Mantainance\Driver\DriverInterface;
 
 class Driver implements DriverInterface {
-	public function applySettings($pathToConfig, $pathToMantainancePage){
+	public function applySettings($pathToConfig, $pathToMantainancePage, $name){
 		$file = file($pathToConfig);
         $new_file=[]; 
         $home = getenv('HOME');
@@ -17,13 +17,13 @@ class Driver implements DriverInterface {
 
             foreach ($file as $key => $line) {
                 if ($key == $key_location) {
-                    array_push($new_file,   "    include ".$home."/maintenance/maintenance.nginx.conf;\n" );
+                    array_push($new_file,   "    include ".$home."/maintenance/".$name."/maintenance.nginx.conf;\n" );
                 }
 
                 array_push( $new_file, $line);
 
                 if ($key == $key_location) {
-                    array_push($new_file,   "        if (-f ".$home."/maintenance/maintenance.enable) {\n",
+                    array_push($new_file,   "        if (-f ".$home."/maintenance/".$name."/maintenance.enable) {\n",
                                             "           return 503;\n",
                                             "        }\n" );
                 }
@@ -38,11 +38,11 @@ class Driver implements DriverInterface {
         $conf=[	
         	"    error_page 503 @maintenance;\n",
             "    location @maintenance {\n",
-            "        root ".$dirname.";"
+            "        root ".$dirname.";\n",
             "        rewrite ^(.*)$ /".$filename." break;\n", 
             "    }\n"];
         file_put_contents("maintenance.conf" , $conf);
-        shell_exec("sudo mv maintenance.conf ".$home."/maintenance/maintenance.nginx.conf -f");
-        shell_exec("sudo service nginx restart");        
-	}
+        shell_exec("sudo mv maintenance.conf ".$home."/maintenance/".$name."/maintenance.nginx.conf -f");
+        //shell_exec("sudo service nginx restart");
+    }
 }

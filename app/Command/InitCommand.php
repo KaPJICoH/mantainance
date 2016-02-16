@@ -58,7 +58,6 @@ class InitCommand extends Command {
         if(Check::check_name_dir($dir, $name)){
             shell_exec("sudo mkdir ".$dir.$name);
             $output->writeln("You name: '$name'");
-            die();
             $server = strtolower($server);            
             switch ($server) {
 

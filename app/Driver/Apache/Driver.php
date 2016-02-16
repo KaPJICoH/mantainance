@@ -5,7 +5,7 @@ namespace Mantainance\Driver\Apache;
 use Mantainance\Driver\DriverInterface;
 
 class Driver implements DriverInterface {
-    public function applySettings($pathToConfig, $pathToMantainancePage){
+    public function applySettings($pathToConfig, $pathToMantainancePage, $name){
         $file = file($pathToConfig);        
         $new_file=[];        
         $filename=basename($pathToMantainancePage);
@@ -14,7 +14,7 @@ class Driver implements DriverInterface {
         //add config file        
         $home = getenv('HOME'); 
         $conf=[ "Alias /errors ".$dirname."\n",
-        		"<If \"-f '".$home."/maintenance/maintenance.enable'\">\n",
+        		"<If \"-f '".$home."/maintenance/".$name."/maintenance.enable'\">\n",
         		"	<IfModule mod_rewrite.c>\n",
                 "   	RewriteEngine On\n",                  		
                 "   	RewriteCond %{SCRIPT_FILENAME} !".$filename."\n",
@@ -24,7 +24,7 @@ class Driver implements DriverInterface {
                 "</If>\n"];
 
         file_put_contents("maintenance.conf" , $conf);
-        shell_exec("sudo mv maintenance.conf ".$home."/maintenance/maintenance.apache.conf -f");
+        shell_exec("sudo mv maintenance.conf ".$home."/maintenance/".$name."/maintenance.apache.conf -f");
         
         //add include
         if(!preg_grep('/maintenance\/maintenance\.apache\.conf/', $file)){        	
@@ -32,7 +32,7 @@ class Driver implements DriverInterface {
         	foreach ($file as $key => $line) {   	
         		array_push( $new_file, $line);
         		if ($key == $key_virtual) {
-        			array_push($new_file, 	"	Include ".$home."/maintenance/maintenance.apache.conf\n" );
+        			array_push($new_file, 	"	Include ".$home."/maintenance/".$name."/maintenance.apache.conf\n" );
         		}
         	}
         	$config_name=basename("pathToConfig");
