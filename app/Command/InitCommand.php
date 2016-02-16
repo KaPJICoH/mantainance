@@ -46,7 +46,6 @@ class InitCommand extends Command {
     protected function execute(InputInterface $input, OutputInterface $output)
     {   
         $home = getenv('HOME');
-        $dir = $home."/maintenance/"; 
         if(!file_exists($home.'/maintenance'))
             shell_exec("sudo mkdir ~/maintenance");
         
@@ -55,8 +54,7 @@ class InitCommand extends Command {
         $path_config=$input->getArgument('config-path');
         $path_page=$input->getArgument('mantainance-page-path');     
         
-        if(Check::check_name_dir($dir, $name)){
-            shell_exec("sudo mkdir ".$dir.$name);
+        if(Check::check_name_dir($dir, $name)){            
             $output->writeln("You name: '$name'");
             $server = strtolower($server);            
             switch ($server) {

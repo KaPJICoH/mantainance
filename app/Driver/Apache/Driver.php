@@ -6,7 +6,8 @@ use Mantainance\Driver\DriverInterface;
 
 class Driver implements DriverInterface {
     public function applySettings($pathToConfig, $pathToMantainancePage, $name){
-        $file = file($pathToConfig);        
+        $file = file($pathToConfig);
+        $dir = $home."/maintenance/";         
         $new_file=[];        
         $filename=basename($pathToMantainancePage);
         $dirname =dirname($pathToMantainancePage);
@@ -22,7 +23,7 @@ class Driver implements DriverInterface {
                 "   	ErrorDocument 503 /errors/".$filename."\n",
                 "	</IfModule>\n",
                 "</If>\n"];
-
+        shell_exec("sudo mkdir ".$dir.$name);
         file_put_contents("maintenance.conf" , $conf);
         shell_exec("sudo mv maintenance.conf ".$home."/maintenance/".$name."/maintenance.apache.conf -f");
         

@@ -29,8 +29,8 @@ class Check {
         $files = scandir($path);         
         foreach ($files as $file) {
             if(is_dir($path.$file) && $file==$name)
-                return 0;
+                return false;
         }
-        return 1;
+        return true;
     }
 }
