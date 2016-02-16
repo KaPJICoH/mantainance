@@ -20,6 +20,11 @@ class InitCommand extends Command {
         $this->setName('init')
             ->setDescription('Init command initialize settings for mantainance for your app')
             ->addArgument(
+                'config-name', 
+                InputArgument::REQUIRED, 
+                'Name for you config'
+            )
+            ->addArgument(
                 'server-type', 
                 InputArgument::REQUIRED, 
                 'apache or nginx'
@@ -40,45 +45,53 @@ class InitCommand extends Command {
     }   
     protected function execute(InputInterface $input, OutputInterface $output)
     {   
-        $home = getenv('HOME'); 
-        if(!file_exists($home.'/mantainance'))
-            shell_exec("sudo mkdir ~/mantainance");
+        $home = getenv('HOME');
+        $dir = $home."/maintenance/"; 
+        if(!file_exists($home.'/maintenance'))
+            shell_exec("sudo mkdir ~/maintenance");
         
-        $name ;//for the future
+        $name = $input->getArgument('config-name');
         $server=$input->getArgument('server-type');
         $path_config=$input->getArgument('config-path');
-        $path_page=$input->getArgument('mantainance-page-path');
-       
+        $path_page=$input->getArgument('mantainance-page-path');     
         
-        $server = strtolower($server);            
-        switch ($server) {
+        if(Check::check_name_dir($dir, $name)){
+            shell_exec("sudo mkdir ".$dir.$name);
+            $output->writeln("You name: '$name'");
+            die();
+            $server = strtolower($server);            
+            switch ($server) {
 
-            //nginx
-            case 'nginx':
-                $output->writeln( 'You choose nginx');
-                $nginx =new Nginx\Driver();
+                //nginx
+                case 'nginx':
+                    $output->writeln( 'You choose nginx');
+                    $nginx =new Nginx\Driver();
 
-                if(Check::check_is_file($path_config) && Check::check_is_file($path_page)){
-                    $output->writeln('You work with nginx');            
-                    $nginx->applySettings($path_config, $path_page);   
-                }  
-                break;
+                    if(Check::check_is_file($path_config) && Check::check_is_file($path_page)){
+                        $output->writeln('You work with nginx');            
+                        $nginx->applySettings($path_config, $path_page, $name);   
+                    }  
+                    break;
 
-            //apache    
-            case 'apache':
-                $output->writeln( "You choose apache");
-                $apache =new Apache\Driver();
-                if(Check::check_rewrite() && Check::check_is_file($path_config) && Check::check_is_file($path_page)){
-                    $output->writeln('You work with apache');
-                    $apache->applySettings($path_config, $path_page);   
-                }
-                break;
+                //apache    
+                case 'apache':
+                    $output->writeln( "You choose apache");
+                    $apache =new Apache\Driver();
+                    if(Check::check_rewrite() && Check::check_is_file($path_config) && Check::check_is_file($path_page)){
+                        $output->writeln('You work with apache');
+                        $apache->applySettings($path_config, $path_page, $name);   
+                    }
+                    break;
 
 
-            default:
-                $output->writeln("<error>You choose '$server' we dont work with it. Please chose Apache or Nginx</error>");               
-                break;
-        }      
+                default:
+                    $output->writeln("<error>You choose '$server' we dont work with it. Please chose Apache or Nginx</error>");               
+                    break;
+            } 
+        }
+        else{
+            $output->writeln("<error>You name: '$name' already exists</error>"); 
+        }     
 
         return;
     }   
