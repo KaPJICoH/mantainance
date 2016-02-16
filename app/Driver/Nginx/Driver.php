@@ -44,6 +44,6 @@ class Driver implements DriverInterface {
         shell_exec("sudo mkdir ".$dir.$name);
         file_put_contents("maintenance.conf" , $conf);
         shell_exec("sudo mv maintenance.conf ".$home."/maintenance/".$name."/maintenance.nginx.conf -f");
-        //shell_exec("sudo service nginx restart");
+        shell_exec("sudo service nginx restart");
     }
 }
