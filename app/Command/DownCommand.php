@@ -2,6 +2,7 @@
 
 namespace Mantainance\Command;
 
+use Mantainance\Driver\Check as Check;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument as InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,15 +15,34 @@ class DownCommand extends Command {
     {
         $this->setName('down')
             ->setDescription('Moves your app in to the normal mode')
-            ->setHelp('Help here');
-
+            ->setHelp('Help here')
+            ->addArgument(
+                'config-name', 
+                InputArgument::REQUIRED, 
+                'Name your config'
+            );
         return;
     }
 
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('It Worked!'); 
+        
+        $home = getenv('HOME');
+        $dir = $home."/maintenance/"; 
+        $name = $input->getArgument('config-name');
+        
+        if(!Check::check_name_dir($dir, $name)){
+            if(file_exists($dir.$name."/maintenance.enable")){
+                shell_exec("sudo rm ".$dir.$name."/maintenance.enable");
+                $output->writeln('<info>This site working in normal regime</info>');
+            }
+            else
+                $output->writeln('<comment>This site already working in normal regime!</comment>');
+        }
+        else{
+            $output->writeln('<error>This name does not exists.</error>');
+        } 
 
         return;
     }
