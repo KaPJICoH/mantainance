@@ -6,9 +6,9 @@ use Mantainance\Driver\DriverInterface;
 class Driver implements DriverInterface {
 	public function applySettings($pathToConfig, $pathToMantainancePage, $name){
 		$file = file($pathToConfig);
+        $home = getenv('HOME');
         $dir = $home."/maintenance/";
         $new_file=[]; 
-        $home = getenv('HOME');
         $filename=basename($pathToMantainancePage);
         $dirname =dirname($pathToMantainancePage);
         //add include
