@@ -8,7 +8,8 @@ class Driver implements DriverInterface {
 		$file = file($pathToConfig);
         $new_file=[]; 
         $home = getenv('HOME');
-
+        $filename=basename($pathToMantainancePage);
+        $dirname =dirname($pathToMantainancePage);
         //add include
         if(!preg_grep('/maintenance.enable/', $file)){ 
                     
@@ -37,7 +38,8 @@ class Driver implements DriverInterface {
         $conf=[	
         	"    error_page 503 @maintenance;\n",
             "    location @maintenance {\n",
-            "        rewrite ^(.*)$ /maintenance.html break;\n", 
+            "        root ".$dirname.";"
+            "        rewrite ^(.*)$ /".$filename." break;\n", 
             "    }\n"];
         file_put_contents("maintenance.conf" , $conf);
         shell_exec("sudo mv maintenance.conf ".$home."/maintenance/maintenance.nginx.conf -f");
