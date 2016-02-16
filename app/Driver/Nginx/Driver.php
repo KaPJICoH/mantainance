@@ -12,9 +12,8 @@ class Driver implements DriverInterface {
         $dirname =dirname($pathToMantainancePage);
         //add include
         if(!preg_grep('/maintenance.enable/', $file)){ 
-                    
-            $key_location = array_keys(preg_grep( '/location/i', $file))[0];
 
+            $key_location = array_keys(preg_grep( "/location(\s+)\/(\s+)/i", $file))[0];
             foreach ($file as $key => $line) {
                 if ($key == $key_location) {
                     array_push($new_file,   "    include ".$home."/maintenance/".$name."/maintenance.nginx.conf;\n" );
