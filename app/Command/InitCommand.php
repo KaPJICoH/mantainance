@@ -39,9 +39,10 @@ class InitCommand extends Command {
         return;
     }   
     protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        
-        //shell_exec("sudo mkdir ~/mantainance");
+    {   
+        $home = getenv('HOME'); 
+        if(!file_exists($home.'/mantainance'))
+            shell_exec("sudo mkdir ~/mantainance");
         
         $name ;//for the future
         $server=$input->getArgument('server-type');
@@ -55,11 +56,11 @@ class InitCommand extends Command {
             //nginx
             case 'nginx':
                 $output->writeln( 'You choose nginx');
-                //$nginx =new Nginx\Driver();
+                $nginx =new Nginx\Driver();
 
                 if(Check::check_is_file($path_config) && Check::check_is_file($path_page)){
                     $output->writeln('You work with nginx');            
-                    //$nginx->applySettings($path_config, $path_page);   
+                    $nginx->applySettings($path_config, $path_page);   
                 }  
                 break;
 
