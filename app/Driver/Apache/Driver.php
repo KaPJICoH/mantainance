@@ -11,10 +11,7 @@ class Driver implements DriverInterface {
         $filename=basename($pathToMantainancePage);
         $dirname =dirname($pathToMantainancePage);
 
-        //add dir and config file
-        if(!file_exists('/etc/apache2/conf')){
-        	shell_exec("sudo mkdir /etc/apache2/conf");
-        }
+        //add config file        
         $home = getenv('HOME'); 
         $conf=[ "Alias /errors ".$dirname."\n",
         		"<If \"-f '".$home."/maintenance/maintenance.enable'\">\n",
@@ -27,16 +24,15 @@ class Driver implements DriverInterface {
                 "</If>\n"];
 
         file_put_contents("maintenance.conf" , $conf);
-        shell_exec("sudo mv maintenance.conf /etc/apache2/conf/maintenance.conf -f");
+        shell_exec("sudo mv maintenance.conf ".$home."/maintenance/maintenance.apache.conf -f");
         
         //add include
-        if(!preg_grep('/Include conf\/maintenance\.conf/', $file)){
-        	echo "dont have inlude\n";
+        if(!preg_grep('/maintenance\/maintenance\.apache\.conf/', $file)){        	
         	$key_virtual = array_keys(preg_grep( '/<virtualhost/i', $file))[0];
         	foreach ($file as $key => $line) {   	
         		array_push( $new_file, $line);
         		if ($key == $key_virtual) {
-        			array_push($new_file, 	"	Include conf/maintenance.conf\n" );
+        			array_push($new_file, 	"	Include ".$home."/maintenance/maintenance.apache.conf\n" );
         		}
         	}
         	$config_name=basename("pathToConfig");
