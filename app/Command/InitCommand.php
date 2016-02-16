@@ -2,11 +2,16 @@
 
 namespace Mantainance\Command;
 
+use Mantainance\Driver\Apache as Apache;
+use Mantainance\Driver\Nginx as Nginx;
+use Mantainance\Driver\Check as Check; 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument as InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface as OutputInterface;
+
+
 
 class InitCommand extends Command {
 
@@ -20,7 +25,7 @@ class InitCommand extends Command {
                 'apache or nginx'
             )
             ->addArgument(
-                'config-path', 
+                'config-path',                 
                 InputArgument::REQUIRED, 
                 'Define path of server configuration file for your app'
             )
@@ -32,13 +37,48 @@ class InitCommand extends Command {
             ->setHelp('Help here');
 
         return;
-    }
-
-
+    }   
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('It Worked!'); 
+        
+        //shell_exec("sudo mkdir ~/mantainance");
+        
+        $name ;//for the future
+        $server=$input->getArgument('server-type');
+        $path_config=$input->getArgument('config-path');
+        $path_page=$input->getArgument('mantainance-page-path');
+       
+        
+        $server = strtolower($server);            
+        switch ($server) {
+
+            //nginx
+            case 'nginx':
+                $output->writeln( 'You choose nginx');
+                //$nginx =new Nginx\Driver();
+
+                if(Check::check_is_file($path_config) && Check::check_is_file($path_page)){
+                    $output->writeln('You work with nginx');            
+                    //$nginx->applySettings($path_config, $path_page);   
+                }  
+                break;
+
+            //apache    
+            case 'apache':
+                $output->writeln( "You choose apache");
+                $apache =new Apache\Driver();
+                if(Check::check_rewrite() && Check::check_is_file($path_config) && Check::check_is_file($path_page)){
+                    $output->writeln('You work with apache');
+                    $apache->applySettings($path_config, $path_page);   
+                }
+                break;
+
+
+            default:
+                $output->writeln("<error>You choose '$server' we dont work with it. Please chose Apache or Nginx</error>");               
+                break;
+        }      
 
         return;
-    }
+    }   
 }
