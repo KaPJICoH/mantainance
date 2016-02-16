@@ -46,6 +46,7 @@ class InitCommand extends Command {
     protected function execute(InputInterface $input, OutputInterface $output)
     {   
         $home = getenv('HOME');
+        $dir = $home."/maintenance/";
         if(!file_exists($home.'/maintenance'))
             shell_exec("sudo mkdir ~/maintenance");
         
