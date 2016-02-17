@@ -25,17 +25,25 @@ class ListCommand extends Command {
         $home = getenv('HOME');    
         $dir = $home."/maintenance/";
         $list_name=[]; 
-        $files = array_diff(scandir($dir), array('..', '.'));
-        foreach ($files as $file) {
-            if(is_dir($dir.$file))
-                array_push($list_name, $file);
+        if($files = array_diff(scandir($dir), array('..', '.'))){
+            foreach ($files as $file) {
+                if(is_dir($dir.$file))
+                    array_push($list_name, $file);
+            }
+            if($list_name){
+                $output->writeln('<info> List name:</info>');
+                foreach ($list_name as $key => $name) {
+                    $key=$key+1;
+                    $output->writeln("<info> ".$key.". ".$name."</info>");
+                }
+            }
+            else
+                $output->writeln("<infoYou yet don't create any name</info>");            
         }
+        else
+            $output->writeln("<infoYou yet don't create any name</info>");
         
-        $output->writeln('<info> List name:</info>');
-        foreach ($list_name as $key => $name) {
-            $key=$key+1;
-            $output->writeln("<info> ".$key.". ".$name."</info>");
-        }
+            
         
         return;
     }
