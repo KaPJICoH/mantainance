@@ -45,16 +45,21 @@ class InitCommand extends Command {
     }   
     protected function execute(InputInterface $input, OutputInterface $output)
     {   
+        
         $home = getenv('HOME');
         $dir = $home."/maintenance/";
-        if(!file_exists($home.'/maintenance'))
+        $log= $dir."maintenance.log";
+        if(!file_exists($home.'/maintenance')){
             shell_exec("sudo mkdir ~/maintenance");
-        
+            shell_exec("sudo chmod -R 777 ".$dir); 
+            shell_exec("sudo touch ~/maintenance/maintenance.log");
+        }
+
         $name = $input->getArgument('config-name');
         $server=$input->getArgument('server-type');
         $path_config=$input->getArgument('config-path');
         $path_page=$input->getArgument('mantainance-page-path');     
-        
+            
         if(Check::check_name_dir($dir, $name)){            
             $output->writeln("You name: '$name'");
             $server = strtolower($server);            
@@ -62,23 +67,28 @@ class InitCommand extends Command {
 
                 //nginx
                 case 'nginx':
-                    $output->writeln( 'You choose nginx');
+                $output->writeln( 'You choose nginx');
                     $nginx =new Nginx\Driver();
 
-                    if(Check::check_is_file($path_config) && Check::check_is_file($path_page)){
+                    if(Check::check_is_file($path_config, $log) && Check::check_is_file($path_page, $log)){
                         $output->writeln('You work with nginx');            
                         $nginx->applySettings($path_config, $path_page, $name);   
-                    }  
+                    }
+                    else
+                        $output->writeln("<error>You did not passed validation. Please check the entered data. Details can see in the logs: ".$log."</error>");
                     break;
 
                 //apache    
                 case 'apache':
                     $output->writeln( "You choose apache");
                     $apache =new Apache\Driver();
-                    if(Check::check_rewrite() && Check::check_is_file($path_config) && Check::check_is_file($path_page)){
+                    if(Check::check_rewrite($log) && Check::check_is_file($path_config, $log) && Check::check_is_file($path_page, $log)){
                         $output->writeln('You work with apache');
                         $apache->applySettings($path_config, $path_page, $name);   
                     }
+                    else
+                        $output->writeln("<error>You did not passed validation. Please check the entered data and check whether you have rewrite module. Details can see in the logs: ".$log."</error>");
+                            
                     break;
 
 
@@ -89,8 +99,7 @@ class InitCommand extends Command {
         }
         else{
             $output->writeln("<error>You name: '$name' already exists</error>"); 
-        }     
-
+        }
         return;
     }   
 }

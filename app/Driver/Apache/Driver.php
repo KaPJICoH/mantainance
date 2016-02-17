@@ -22,9 +22,9 @@ class Driver implements DriverInterface {
                 "   	RewriteRule ^.*$ /".$filename." [R=503,L]\n",
                 "   	ErrorDocument 503 /errors/".$filename."\n",
                 "	</IfModule>\n",
-                "</If>\n"];
-        shell_exec("sudo mkdir ".$dir.$name);
+                "</If>\n"];        
         file_put_contents("maintenance.conf" , $conf);
+        shell_exec("sudo mkdir ".$dir.$name);
         shell_exec("sudo mv maintenance.conf ".$home."/maintenance/".$name."/maintenance.apache.conf -f");
         
         //add include

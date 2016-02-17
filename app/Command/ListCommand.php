@@ -41,9 +41,7 @@ class ListCommand extends Command {
                 $output->writeln("<infoYou yet don't create any name</info>");            
         }
         else
-            $output->writeln("<infoYou yet don't create any name</info>");
-        
-            
+            $output->writeln("<infoYou yet don't create any name</info>");            
         
         return;
     }

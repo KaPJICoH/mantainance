@@ -14,24 +14,26 @@ class Driver implements DriverInterface {
         //add include
         if(!preg_grep('/maintenance.enable/', $file)){ 
 
-            $key_location = array_keys(preg_grep( "/location(\s+)\/(\s+)/i", $file))[0];
-            foreach ($file as $key => $line) {
-                if ($key == $key_location) {
-                    array_push($new_file,   "    include ".$home."/maintenance/".$name."/maintenance.nginx.conf;\n" );
-                }
+            if($key_location = array_keys(preg_grep( "/location(\s+)\/(\s+)/i", $file))[0]){
+                foreach ($file as $key => $line) {
+                    if ($key == $key_location) {
+                        array_push($new_file,   "    include ".$home."/maintenance/".$name."/maintenance.nginx.conf;\n" );
+                    }
 
-                array_push( $new_file, $line);
+                    array_push( $new_file, $line);
 
-                if ($key == $key_location) {
-                    array_push($new_file,   "        if (-f ".$home."/maintenance/".$name."/maintenance.enable) {\n",
-                                            "           return 503;\n",
-                                            "        }\n" );
+                    if ($key == $key_location) {
+                        array_push($new_file,   "        if (-f ".$home."/maintenance/".$name."/maintenance.enable) {\n",
+                                                "           return 503;\n",
+                                                "        }\n" );
+                    }
                 }
+                $config_name=basename("pathToConfig");
+                file_put_contents($config_name, $new_file);
+                shell_exec("sudo mv ".$config_name." ".$pathToConfig." -f"); 
             }
             
-            $config_name=basename("pathToConfig");
-            file_put_contents($config_name, $new_file);
-            shell_exec("sudo mv ".$config_name." ".$pathToConfig." -f");      
+                 
         }        
         
         //add config file 
@@ -40,9 +42,9 @@ class Driver implements DriverInterface {
             "    location @maintenance {\n",
             "        root ".$dirname.";\n",
             "        rewrite ^(.*)$ /".$filename." break;\n", 
-            "    }\n"];
-        shell_exec("sudo mkdir ".$dir.$name);
+            "    }\n"];        
         file_put_contents("maintenance.conf" , $conf);
+        shell_exec("sudo mkdir ".$dir.$name);
         shell_exec("sudo mv maintenance.conf ".$home."/maintenance/".$name."/maintenance.nginx.conf -f");
         shell_exec("sudo service nginx restart");
     }
