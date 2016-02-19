@@ -45,7 +45,7 @@ class Driver implements DriverInterface {
                         return false;
                     }
                     if( Shell::command("sudo touch", $dir.$config_name) && Shell::command("sudo chmod -R 777 * ".$dir) && file_put_contents($dir.$config_name, $new_file) && Shell::command("sudo mv ".$dir.$config_name." ".$pathToConfig." -f"))                   
-                        return true; //Shell::command("sudo service nginx restart");                                             
+                        return Shell::command("sudo service nginx restart");                                             
                 }
                 return false; 
             }           
