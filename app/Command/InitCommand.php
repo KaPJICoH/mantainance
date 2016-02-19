@@ -6,6 +6,7 @@ use Mantainance\Driver\Apache as Apache;
 use Mantainance\Driver\Nginx as Nginx;
 use Mantainance\Driver\Check as Check;
 use Mantainance\Driver\Shell as Shell;
+use Mantainance\Driver\Backup as Backup;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument as InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -57,7 +58,9 @@ class InitCommand extends Command {
             $name = $input->getArgument('config-name');
             $server=$input->getArgument('server-type');
             $path_config=$input->getArgument('config-path');
-            $path_page=$input->getArgument('mantainance-page-path');     
+            $path_page=$input->getArgument('mantainance-page-path');
+
+            $backup_config =file($path_config);     
             
             if(Check::check_name_dir($dir, $name)){            
                 $output->writeln("<info> Your name for config: '$name'</info>");
@@ -66,15 +69,23 @@ class InitCommand extends Command {
 
                     //nginx
                     case 'nginx':
-                    $output->writeln( '<info> You choose nginx </info>');
+                        $output->writeln( '<info> You choose nginx </info>');
                         $nginx =new Nginx\Driver();
-
+                        $output->writeln('<info> Validation your path</info>');
                         if(Check::check_is_file($path_config, $log) && Check::check_is_file($path_page, $log)){
-                            $output->writeln('<info> Your path passed validation </info>');            
-                            //$nginx->applySettings($path_config, $path_page, $name);   
+                           $output->writeln('<info> Creating config file and connection him in your config file</info>');                           
+                            if ($nginx->applySettings($path_config, $path_page, $name))
+                            {
+                                $output->writeln('<info> Finish install now you can use maintenance for this site</info>');
+                            }
+                            else {
+                                Shell::command("sudo rm -rf ".$dir.$name);
+                                Backup::return_config($backup_config, $path_config);                               
+                                $output->writeln("<error>Sorry but something wrong in your config for more datail look in logs: ".$log."</error>");
+                            }   
                         }
                         else
-                            $output->writeln("<error>You did not passed validation. Please check the entered data. Details can see in the logs: ".$log."</error>");
+                            $output->writeln("<error> You did not passed validation. Please check the entered data. Details can see in the logs: ".$log."</error>");
                         break;
 
                     //apache    
@@ -86,31 +97,32 @@ class InitCommand extends Command {
                             $output->writeln('<info> Creating config file and connection him in your config file</info>');
                             if ($apache->applySettings($path_config, $path_page, $name))
                             {
-                                $output->writeln('<info>Finish install now you can use maintenance for this site</info>');
+                                $output->writeln('<info> Finish install now you can use maintenance for this site</info>');
                             }
                             else {
                                 Shell::command("sudo rm -rf ".$dir.$name);
-                                $output->writeln('<error>Sorry but something wrong</error>');
+                                Backup::return_config($backup_config, $path_config);
+                                $output->writeln("<error>Sorry but something wrong in your config for more datail look in logs: ".$log."</error>");
                             }
                                    
                         }
                         else
-                            $output->writeln("<error>You did not passed validation. Please check the entered data and check whether you have rewrite module. Details can see in the logs: ".$log."</error>");
+                            $output->writeln("<error> You did not passed validation. Please check the entered data and check whether you have rewrite module. Details can see in the logs: ".$log."</error>");
                                 
                         break;
 
 
                     default:
-                        $output->writeln("<error>You choose '$server' we dont work with it. Please chose Apache or Nginx</error>");               
+                        $output->writeln("<error> You choose '$server' we dont work with it. Please chose Apache or Nginx</error>");               
                         break;
                 } 
             }
             else{
-                $output->writeln("<error>You name: '$name' already exists</error>"); 
+                $output->writeln("<error> You name: '$name' already exists</error>"); 
             }
         }
         else
-            $output->writeln("<error>Something wrong. For this command need sudo permision please check if you have</error>");   
+            $output->writeln("<error> Something wrong. For this command need sudo permision please check if you have</error>");   
         return;
     }   
 }
