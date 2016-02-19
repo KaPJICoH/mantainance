@@ -4,7 +4,8 @@ namespace Mantainance\Command;
 
 use Mantainance\Driver\Apache as Apache;
 use Mantainance\Driver\Nginx as Nginx;
-use Mantainance\Driver\Check as Check; 
+use Mantainance\Driver\Check as Check;
+use Mantainance\Driver\Shell as Shell;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument as InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -49,57 +50,67 @@ class InitCommand extends Command {
         $home = getenv('HOME');
         $dir = $home."/maintenance/";
         $log= $dir."maintenance.log";
-        if(!file_exists($home.'/maintenance')){
-            shell_exec("sudo mkdir ~/maintenance");
-            shell_exec("sudo chmod -R 777 ".$dir); 
-            shell_exec("sudo touch ~/maintenance/maintenance.log");
-        }
 
-        $name = $input->getArgument('config-name');
-        $server=$input->getArgument('server-type');
-        $path_config=$input->getArgument('config-path');
-        $path_page=$input->getArgument('mantainance-page-path');     
+        $output->writeln("<info> Create directory '".$dir."' and file '".$log."'</info>");
+        if(Shell::command("sudo mkdir", $home."/maintenance") && Shell::command("sudo touch", $home ."/maintenance/maintenance.log") && Shell::command("sudo chmod -R 777 * ".$dir) ){
+        
+            $name = $input->getArgument('config-name');
+            $server=$input->getArgument('server-type');
+            $path_config=$input->getArgument('config-path');
+            $path_page=$input->getArgument('mantainance-page-path');     
             
-        if(Check::check_name_dir($dir, $name)){            
-            $output->writeln("You name: '$name'");
-            $server = strtolower($server);            
-            switch ($server) {
+            if(Check::check_name_dir($dir, $name)){            
+                $output->writeln("<info> Your name for config: '$name'</info>");
+                $server = strtolower($server);            
+                switch ($server) {
 
-                //nginx
-                case 'nginx':
-                $output->writeln( 'You choose nginx');
-                    $nginx =new Nginx\Driver();
+                    //nginx
+                    case 'nginx':
+                    $output->writeln( '<info> You choose nginx </info>');
+                        $nginx =new Nginx\Driver();
 
-                    if(Check::check_is_file($path_config, $log) && Check::check_is_file($path_page, $log)){
-                        $output->writeln('You work with nginx');            
-                        $nginx->applySettings($path_config, $path_page, $name);   
-                    }
-                    else
-                        $output->writeln("<error>You did not passed validation. Please check the entered data. Details can see in the logs: ".$log."</error>");
-                    break;
+                        if(Check::check_is_file($path_config, $log) && Check::check_is_file($path_page, $log)){
+                            $output->writeln('<info> Your path passed validation </info>');            
+                            //$nginx->applySettings($path_config, $path_page, $name);   
+                        }
+                        else
+                            $output->writeln("<error>You did not passed validation. Please check the entered data. Details can see in the logs: ".$log."</error>");
+                        break;
 
-                //apache    
-                case 'apache':
-                    $output->writeln( "You choose apache");
-                    $apache =new Apache\Driver();
-                    if(Check::check_rewrite($log) && Check::check_is_file($path_config, $log) && Check::check_is_file($path_page, $log)){
-                        $output->writeln('You work with apache');
-                        $apache->applySettings($path_config, $path_page, $name);   
-                    }
-                    else
-                        $output->writeln("<error>You did not passed validation. Please check the entered data and check whether you have rewrite module. Details can see in the logs: ".$log."</error>");
-                            
-                    break;
+                    //apache    
+                    case 'apache':
+                        $output->writeln( "<info> You choose apache </info>");
+                        $apache =new Apache\Driver();
+                        $output->writeln('<info> Validation your path and check your mod_rewrite </info>');
+                        if(Check::check_rewrite($log) && Check::check_is_file($path_config, $log) && Check::check_is_file($path_page, $log)){                            
+                            $output->writeln('<info> Creating config file and connection him in your config file</info>');
+                            if ($apache->applySettings($path_config, $path_page, $name))
+                            {
+                                $output->writeln('<info>Finish install now you can use maintenance for this site</info>');
+                            }
+                            else {
+                                Shell::command("sudo rm -rf ".$dir.$name);
+                                $output->writeln('<error>Sorry but something wrong</error>');
+                            }
+                                   
+                        }
+                        else
+                            $output->writeln("<error>You did not passed validation. Please check the entered data and check whether you have rewrite module. Details can see in the logs: ".$log."</error>");
+                                
+                        break;
 
 
-                default:
-                    $output->writeln("<error>You choose '$server' we dont work with it. Please chose Apache or Nginx</error>");               
-                    break;
-            } 
+                    default:
+                        $output->writeln("<error>You choose '$server' we dont work with it. Please chose Apache or Nginx</error>");               
+                        break;
+                } 
+            }
+            else{
+                $output->writeln("<error>You name: '$name' already exists</error>"); 
+            }
         }
-        else{
-            $output->writeln("<error>You name: '$name' already exists</error>"); 
-        }
+        else
+            $output->writeln("<error>Something wrong. For this command need sudo permision please check if you have</error>");   
         return;
     }   
 }
