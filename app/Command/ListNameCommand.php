@@ -8,11 +8,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface as OutputInterface;
 
-class ListCommand extends Command {
+class ListNameCommand extends Command {
 
     protected function configure()
     {
-        $this->setName('list')
+        $this->setName('list_name')
             ->setDescription('List of names')
             ->setHelp('Help here');
             
